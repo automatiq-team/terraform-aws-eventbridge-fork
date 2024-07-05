@@ -90,7 +90,7 @@ resource "aws_cloudwatch_event_rule" "this" {
   description         = lookup(each.value, "description", null)
   event_pattern       = lookup(each.value, "event_pattern", null)
   schedule_expression = lookup(each.value, "schedule_expression", null)
-  role_arn            = lookup(each.value, "role_arn", false) ? aws_iam_role.eventbridge[0].arn : null
+  role_arn            = lookup(each.value, "role_arn", null)
   state               = try(each.value.enabled ? "ENABLED" : "DISABLED", tobool(each.value.state) ? "ENABLED" : "DISABLED", upper(each.value.state), null)
   force_destroy       = try(each.value.force_destroy, null)
 

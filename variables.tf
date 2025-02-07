@@ -10,6 +10,12 @@ variable "create_role" {
   default     = true
 }
 
+variable "create_pipe_role_only" {
+  description = "Controls whether an IAM role should be created for the pipes only"
+  type        = bool
+  default     = false
+}
+
 variable "append_rule_postfix" {
   description = "Controls whether to append '-rule' to the name of the rule"
   type        = bool
@@ -120,8 +126,20 @@ variable "bus_name" {
   default     = "default"
 }
 
+variable "bus_description" {
+  description = "Event bus description"
+  type        = string
+  default     = null
+}
+
 variable "event_source_name" {
   description = "The partner event source that the new event bus will be matched with. Must match name."
+  type        = string
+  default     = null
+}
+
+variable "kms_key_identifier" {
+  description = "The identifier of the AWS KMS customer managed key for EventBridge to use, if you choose to use a customer managed key to encrypt events on this event bus. The identifier can be the key Amazon Resource Name (ARN), KeyId, key alias, or key alias ARN."
   type        = string
   default     = null
 }
@@ -242,6 +260,12 @@ variable "role_tags" {
   description = "A map of tags to assign to IAM role"
   type        = map(string)
   default     = {}
+}
+
+variable "ecs_pass_role_resources" {
+  description = "List of approved roles to be passed"
+  type        = list(string)
+  default     = []
 }
 
 ###########

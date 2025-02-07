@@ -2,6 +2,95 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.14.3](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.14.2...v3.14.3) (2025-01-28)
+
+
+### Bug Fixes
+
+* Step function enrichment ([#149](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/149)) ([8e1c345](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/8e1c345c693bc213a5326a589f1d536eff49c3b2))
+
+## [3.14.2](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.14.1...v3.14.2) (2025-01-10)
+
+
+### Bug Fixes
+
+* Allow Pipes with Kinesis Targets ([#143](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/143)) ([b4b29bf](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/b4b29bfc85816b55306704da65b4d96b511955cd))
+
+## [3.14.1](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.14.0...v3.14.1) (2025-01-08)
+
+
+### Bug Fixes
+
+* Cloudwatch policy for pipes ([#140](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/140)) ([57626e4](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/57626e4826fee0fa3969d706aa54285f24b81bdd))
+
+## [3.14.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.13.0...v3.14.0) (2025-01-07)
+
+
+### Features
+
+* Added dynamic block for managed_streaming_kafka_parameters ([#148](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/148)) ([7621d52](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/7621d52f7143c8f142bc2f8ab0093d6653e4907f))
+
+## [3.13.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.12.0...v3.13.0) (2024-11-27)
+
+
+### Features
+
+* Add Event Bus `description` argument ([#142](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/142)) ([200310d](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/200310d8dd3deb5c10ac99c5d0e7f128b386d566))
+
+## [3.12.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.11.0...v3.12.0) (2024-10-26)
+
+
+### Features
+
+* Support `aws_cloudwatch_event_target.appsync_target` ([#139](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/139)) ([48699d7](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/48699d7e14d034867b576be67df5361789abb68c))
+
+
+### Bug Fixes
+
+* Update CI workflow versions to latest ([#137](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/137)) ([7ff8bf1](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/7ff8bf122f83858479a9fc2854e1ef960fdddc09))
+
+## [3.11.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.10.0...v3.11.0) (2024-09-12)
+
+
+### Features
+
+* Update IAM pipes to support step function sync executions ([#134](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/134)) ([58f2efb](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/58f2efb90258e8688db25a9c286d08e2e9d8560c))
+
+## [3.10.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.9.1...v3.10.0) (2024-09-05)
+
+
+### Features
+
+* Adding `kms_key_identifier`to `aws_cloudwatch_event_bus` and `log_configuration.include_execution_data` to `aws_pipes_pipe` ([#132](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/132)) ([b7dadc0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/b7dadc08aa72fdccf88aec764c61ef70bb1c19a7))
+
+## [3.9.1](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.9.0...v3.9.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* Add `depends_on` policy and policy attachments for pipes ([#133](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/133)) ([d4938fc](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/d4938fc595b4ae167efe37912f3d6de6e71fc565))
+
+## [3.9.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.8.0...v3.9.0) (2024-08-16)
+
+
+### Features
+
+* Allow specifying ecs policy passrole resources ([#131](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/131)) ([1dcad03](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/1dcad03ec3736e6942974ff8f0d8083aa3693087))
+
+## [3.8.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.7.1...v3.8.0) (2024-08-03)
+
+
+### Features
+
+* Updating default ECS policies to allow for Tagging ([#130](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/130)) ([0e246a5](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/0e246a5901222488b99e1cf368d56d46826da745))
+
+## [3.7.1](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.7.0...v3.7.1) (2024-07-15)
+
+
+### Bug Fixes
+
+* Fix kinesis_target and kinesis_parameters dynamic blocks ([#124](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/issues/124)) ([51578aa](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/commit/51578aa8d9b5692685616da85a8a2516b163bc83))
+
 ## [3.7.0](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/compare/v3.6.0...v3.7.0) (2024-07-05)
 
 

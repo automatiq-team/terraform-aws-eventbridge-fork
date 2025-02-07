@@ -29,11 +29,11 @@ locals {
 
         # Enrichment / Target
         lambda = {
-          values            = [v.target, try(aws_cloudwatch_event_api_destination.this[v.enrichment].arn, null)],
+          values            = [v.target, try(v.enrichment, null), try(aws_cloudwatch_event_api_destination.this[v.enrichment].arn, null)],
           matching_services = ["lambda"]
         },
         step_functions = {
-          values            = [v.target, try(aws_cloudwatch_event_api_destination.this[v.enrichment].arn, null)],
+          values            = [v.target, try(v.enrichment, null)],
           matching_services = ["states"]
         },
         api_gateway = {
@@ -60,7 +60,16 @@ locals {
           matching_services = ["batch"]
         },
         logs = {
-          values            = [v.target],
+          values = flatten([
+            "${v.target}:*",
+            [
+              for pipe in var.pipes : [
+                for log_config in try([pipe.log_configuration], []) : [
+                  for cloudwatch_log in try([log_config.cloudwatch_logs_log_destination], []) : "${cloudwatch_log.log_group_arn}:*"
+                ]
+              ]
+            ]
+          ]),
           matching_services = ["logs"]
         },
         ecs = {
@@ -182,7 +191,8 @@ locals {
 
     kinesis_target = {
       actions = [
-        "kinesis:PutRecord"
+        "kinesis:PutRecord",
+        "kinesis:PutRecords"
       ]
     }
 
@@ -227,7 +237,8 @@ locals {
 
     step_functions = {
       actions = [
-        "states:StartExecution"
+        "states:StartExecution",
+        "states:StartSyncExecution"
       ]
     }
 
@@ -260,7 +271,8 @@ locals {
 
     ecs = {
       actions = [
-        "ecs:RunTask"
+        "ecs:RunTask",
+        "ecs:TagResource"
       ]
     }
 

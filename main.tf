@@ -64,8 +64,10 @@ data "aws_cloudwatch_event_bus" "this" {
 resource "aws_cloudwatch_event_bus" "this" {
   count = var.create && var.create_bus ? 1 : 0
 
-  name              = var.bus_name
-  event_source_name = try(var.event_source_name, null)
+  name               = var.bus_name
+  description        = var.bus_description
+  event_source_name  = var.event_source_name
+  kms_key_identifier = var.kms_key_identifier
 
   tags = var.tags
 }
@@ -195,10 +197,10 @@ resource "aws_cloudwatch_event_target" "this" {
   }
 
   dynamic "kinesis_target" {
-    for_each = lookup(each.value, "kinesis_target", null) != null ? [true] : []
+    for_each = lookup(each.value, "partition_key_path", null) != null ? [true] : []
 
     content {
-      partition_key_path = lookup(kinesis_target.value, "partition_key_path", null)
+      partition_key_path = each.value.partition_key_path
     }
   }
 
@@ -219,6 +221,13 @@ resource "aws_cloudwatch_event_target" "this" {
       path_parameter_values   = lookup(http_target.value, "path_parameter_values", null)
       query_string_parameters = lookup(http_target.value, "query_string_parameters", null)
       header_parameters       = lookup(http_target.value, "header_parameters", null)
+    }
+  }
+
+  dynamic "appsync_target" {
+    for_each = try([each.value.appsync_target], [])
+    content {
+      graphql_operation = try(appsync_target.value.graphql_operation, null)
     }
   }
 
@@ -561,10 +570,10 @@ resource "aws_scheduler_schedule" "this" {
     }
 
     dynamic "kinesis_parameters" {
-      for_each = lookup(each.value, "kinesis_parameters", null) != null ? [true] : []
+      for_each = lookup(each.value, "partition_key", null) != null ? [true] : []
 
       content {
-        partition_key = kinesis_parameters.value.partition_key
+        partition_key = each.value.partition_key
       }
     }
 
@@ -670,6 +679,27 @@ resource "aws_pipes_pipe" "this" {
         }
       }
 
+      dynamic "managed_streaming_kafka_parameters" {
+        for_each = try([source_parameters.value.managed_streaming_kafka_parameters], [])
+
+        content {
+          batch_size                         = try(managed_streaming_kafka_parameters.value.batch_size, null)
+          maximum_batching_window_in_seconds = try(managed_streaming_kafka_parameters.value.maximum_batching_window_in_seconds, null)
+          consumer_group_id                  = try(managed_streaming_kafka_parameters.value.consumer_group_id, null)
+          starting_position                  = try(managed_streaming_kafka_parameters.value.starting_position, null)
+          topic_name                         = try(managed_streaming_kafka_parameters.value.topic_name, null)
+
+          dynamic "credentials" {
+            for_each = try([managed_streaming_kafka_parameters.value.credentials], [])
+
+            content {
+              client_certificate_tls_auth = credentials.value.client_certificate_tls_auth
+              sasl_scram_512_auth         = credentials.value.sasl_scram_512_auth
+            }
+          }
+        }
+      }
+
       dynamic "kinesis_stream_parameters" {
         for_each = try([source_parameters.value.kinesis_stream_parameters], [])
 
@@ -706,6 +736,13 @@ resource "aws_pipes_pipe" "this" {
         content {
           message_deduplication_id = try(sqs_queue_parameters.value.message_deduplication_id, null)
           message_group_id         = try(sqs_queue_parameters.value.message_group_id, null)
+        }
+      }
+      dynamic "kinesis_stream_parameters" {
+        for_each = try([target_parameters.value.kinesis_stream_parameters], [])
+
+        content {
+          partition_key = try(kinesis_stream_parameters.value.partition_key, null)
         }
       }
 
@@ -781,7 +818,8 @@ resource "aws_pipes_pipe" "this" {
   dynamic "log_configuration" {
     for_each = try([each.value.log_configuration], [])
     content {
-      level = log_configuration.value.level
+      include_execution_data = try(log_configuration.value.include_execution_data, null)
+      level                  = log_configuration.value.level
 
       dynamic "cloudwatch_logs_log_destination" {
         for_each = try([log_configuration.value.cloudwatch_logs_log_destination], [])
@@ -810,4 +848,9 @@ resource "aws_pipes_pipe" "this" {
   }
 
   tags = merge(var.tags, try(each.value.tags, {}))
+
+  depends_on = [
+    aws_iam_policy.service,
+    aws_iam_policy_attachment.service
+  ]
 }

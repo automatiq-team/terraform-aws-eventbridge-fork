@@ -8,12 +8,14 @@ provider "aws" {
 }
 
 data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 module "eventbridge" {
   source = "../../"
 
-  create_bus = true
-  bus_name   = "example"
+  create_bus         = true
+  bus_name           = "example"
+  kms_key_identifier = module.kms.key_arn
 
   create_api_destinations = true
   create_connections      = true
@@ -104,7 +106,8 @@ module "eventbridge" {
       }
 
       log_configuration = {
-        level = "TRACE"
+        level                  = "TRACE"
+        include_execution_data = ["ALL"]
         cloudwatch_logs_log_destination = {
           log_group_arn = aws_cloudwatch_log_group.logs.arn
         }
@@ -181,6 +184,39 @@ module "eventbridge" {
 
       tags = {
         Pipe = "kinesis_source_cloudwatch_target"
+      }
+    }
+
+    # With Kinesis Stream source and Kinesis Stream target
+    kinesis_source_kinesis_target = {
+      source = aws_kinesis_stream.source.arn
+      target = aws_kinesis_stream.target.arn
+
+      source_parameters = {
+        kinesis_stream_parameters = {
+          batch_size                         = 7
+          maximum_batching_window_in_seconds = 90
+          maximum_record_age_in_seconds      = 100
+          maximum_retry_attempts             = 4
+          on_partial_batch_item_failure      = "AUTOMATIC_BISECT"
+          parallelization_factor             = 5
+          starting_position                  = "TRIM_HORIZON"
+          starting_position_timestamp        = null
+          dead_letter_config = {
+            arn = aws_sqs_queue.dlq.arn
+          }
+        }
+      }
+
+      target_parameters = {
+        kinesis_stream_parameters = {
+          # Must be a json path and start with $.
+          partition_key = "$.id"
+        }
+      }
+
+      tags = {
+        Pipe = "kinesis_source_kinesis_target"
       }
     }
 
@@ -426,6 +462,12 @@ resource "aws_kinesis_stream" "source" {
   shard_count = 1
 }
 
+resource "aws_kinesis_stream" "target" {
+  name = "${random_pet.this.id}-target"
+
+  shard_count = 1
+}
+
 ##################################
 # CloudWatch Log Group and Stream
 ##################################
@@ -574,4 +616,49 @@ data "aws_iam_policy_document" "firehose_to_s3" {
       "${module.logs_bucket.s3_bucket_arn}/*",
     ]
   }
+}
+
+module "kms" {
+  source      = "terraform-aws-modules/kms/aws"
+  version     = "~> 2.0"
+  description = "KMS key for cross region automated backups replication"
+
+  # Aliases
+  aliases                 = ["test"]
+  aliases_use_name_prefix = true
+  key_statements = [
+    {
+      sid = "Allow eventbridge"
+      principals = [
+        {
+          type        = "Service"
+          identifiers = ["events.amazonaws.com"]
+        }
+      ]
+      actions = [
+        "kms:DescribeKey",
+        "kms:GenerateDataKey",
+        "kms:Decrypt"
+      ]
+      resources = ["*"]
+      conditions = [
+        {
+          test     = "StringEquals"
+          variable = "kms:EncryptionContext:aws:events:event-bus:arn"
+          values = [
+            "arn:aws:events:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:event-bus/example",
+          ]
+        },
+        {
+          test     = "StringEquals"
+          variable = "aws:SourceArn"
+          values = [
+            "arn:aws:events:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:event-bus/example",
+          ]
+        }
+      ]
+    }
+  ]
+
+  key_owners = [data.aws_caller_identity.current.arn]
 }
